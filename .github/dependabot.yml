@@ -69,7 +69,6 @@ updates:
   #    prefix: "[DEPENDENCY]"
   #  labels:
   #    - "dependencies"
-  #    - "non-security"
   #  open-pull-requests-limit: 100
   #  allow:
   #    #  Dependencies added here have to be ignored in 2. configuration
