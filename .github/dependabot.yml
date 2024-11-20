@@ -37,7 +37,6 @@ updates:
       prefix: "[DEPENDENCY]"
     labels:
       - "dependencies"
-      - "non-security"
     open-pull-requests-limit: 100
     groups:
       # Group calcite dependencies together in same PR
