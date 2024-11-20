@@ -14,12 +14,17 @@ updates:
     target-branch: main 
     schedule:
       interval: "daily"
-      time: "23:15"
+      time: "00:00"
     commit-message:
       prefix: "[SECURITY]"
     labels:
       - "dependencies"
-      - "security"
+      - "cat:security"
+    groups:
+      all-dependencies:
+        applies-to: security-updates
+        patterns:
+          - "*"
 
   # 2. Non-security updates (bi-weekly, max 100 PRs)
   # This configuration is used for regular dependency updates.
@@ -27,7 +32,7 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-      time: "23:15"
+      time: "00:00"
     commit-message:
       prefix: "[DEPENDENCY]"
     labels:
