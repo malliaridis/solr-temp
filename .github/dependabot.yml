@@ -12,13 +12,14 @@ updates:
     # Security updates should not specify a target-branch
     schedule:
       interval: "daily"
-      time: "22:10"
+      time: "22:20"
     commit-message:
       prefix: "[SECURITY]"
     labels:
       - "dependencies"
       - "cat:security"
-    open-pull-requests-limit: 100
+    # Setting limit to 0 disables version-updates
+    open-pull-requests-limit: 0
     #ignore:
     #  # Ignore all version-updates (allow only security-updates)
     #  - dependency-name: "*"
