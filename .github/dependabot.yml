@@ -14,7 +14,7 @@ updates:
     target-branch: main 
     schedule:
       interval: "daily"
-      time: "00:00"
+      time: "01:20"
     commit-message:
       prefix: "[SECURITY]"
     labels:
@@ -32,7 +32,7 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-      time: "00:00"
+      time: "01:20"
     commit-message:
       prefix: "[DEPENDENCY]"
     labels:
