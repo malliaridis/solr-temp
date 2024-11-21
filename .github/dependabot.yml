@@ -12,7 +12,7 @@ updates:
     # Security updates should not specify a target-branch
     schedule:
       interval: "daily"
-      time: "16:00"
+      time: "16:15"
     commit-message:
       prefix: "[SECURITY]"
     labels:
@@ -30,7 +30,7 @@ updates:
     target-branch: main 
     schedule:
       interval: "daily"
-      time: "16:00"
+      time: "16:15"
     commit-message:
       prefix: "[DEPENDENCY]"
     labels:
