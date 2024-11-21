@@ -9,12 +9,10 @@ updates:
   # This configuration is used for security-critical dependency updates.
   - package-ecosystem: "gradle"
     directory: "/"
-    # Add target-branch as a workaround to allow two configurations of
-    # the same package-ecosystem, directory and branch
-    target-branch: main 
+    # Security updates should not specify a target-branch
     schedule:
       interval: "daily"
-      time: "01:20"
+      time: "14:30"
     commit-message:
       prefix: "[SECURITY]"
     labels:
@@ -30,9 +28,12 @@ updates:
   # This configuration is used for regular dependency updates.
   - package-ecosystem: "gradle"
     directory: "/"
+    # Add target-branch as a workaround to allow two configurations of
+    # the same package-ecosystem, directory and branch
+    target-branch: main 
     schedule:
       interval: "daily"
-      time: "01:20"
+      time: "14:45"
     commit-message:
       prefix: "[DEPENDENCY]"
     labels:
