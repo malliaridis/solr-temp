@@ -16,7 +16,7 @@ jobs:
   test:
     name: Run Solr Script Tests
 
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     env:
       DEVELOCITY_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
