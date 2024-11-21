@@ -16,7 +16,7 @@ jobs:
   test:
     name: Build and test Docker image
 
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     env:
       SOLR_DOCKER_IMAGE_REPO: github-pr/solr
