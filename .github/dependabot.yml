@@ -18,6 +18,7 @@ updates:
     labels:
       - "dependencies"
       - "cat:security"
+    open-pull-requests-limit: 100
     ignore:
       # Ignore all version-updates (allow only security-updates)
       - dependency-name: "*"
