@@ -12,17 +12,17 @@ updates:
     # Security updates should not specify a target-branch
     schedule:
       interval: "daily"
-      time: "20:15"
+      time: "21:40"
     commit-message:
       prefix: "[SECURITY]"
     labels:
       - "dependencies"
       - "cat:security"
     open-pull-requests-limit: 100
-    ignore:
-      # Ignore all version-updates (allow only security-updates)
-      - dependency-name: "*"
-        update-types: ["version-update:semver-patch", "version-update:semver-minor", "version-update:semver-major"]
+    #ignore:
+    #  # Ignore all version-updates (allow only security-updates)
+    #  - dependency-name: "*"
+    #    update-types: ["version-update:semver-patch", "version-update:semver-minor", "version-update:semver-major"]
 
   # 2. Non-security updates (bi-weekly, max 100 PRs)
   # This configuration is used for regular dependency updates.
