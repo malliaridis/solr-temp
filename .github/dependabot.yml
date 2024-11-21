@@ -8,11 +8,11 @@ updates:
   # 1. Security updates (daily, no PR limit)
   # This configuration is used for security-critical dependency updates.
   - package-ecosystem: "gradle"
-    directory: "/"
+    directory: "/gradle/libs.versions.toml"
     # Security updates should not specify a target-branch
     schedule:
       interval: "daily"
-      time: "14:30"
+      time: "15:00"
     commit-message:
       prefix: "[SECURITY]"
     labels:
@@ -28,17 +28,14 @@ updates:
   # This configuration is used for regular dependency updates.
   - package-ecosystem: "gradle"
     directory: "/"
-    # Add target-branch as a workaround to allow two configurations of
-    # the same package-ecosystem, directory and branch
-    target-branch: main 
     schedule:
       interval: "daily"
-      time: "14:45"
+      time: "15:00"
     commit-message:
       prefix: "[DEPENDENCY]"
     labels:
       - "dependencies"
-    open-pull-requests-limit: 100
+    open-pull-requests-limit: 10
     groups:
       # Group calcite dependencies together in same PR
       calcite:
@@ -50,28 +47,28 @@ updates:
           - "org.apache.httpcomponents*"
     ignore:
       # Ignore noisy dependencies in weekly checks
-      # TODO Enable ignores after https://github.com/dependabot/dependabot-core/issues/1778
-      #- dependency-name: "software.amazon.awssdk*"
-      #- dependency-name: "com.google.cloud*"
+      - dependency-name: "software.amazon.awssdk*"
+      - dependency-name: "com.google.cloud*"
       # Ignore major version upgrades for Jetty (requires manual update)
       - dependency-name: "org.eclipse.jetty*"
         update-types: ["version-update:semver-major"]
 
-  # TODO Enable "noisy updates" configuration once
-  # https://github.com/dependabot/dependabot-core/issues/1778 is fixed
-  
   # 3. Noisy non-security updates (monthly, max 100 PRs)
   # This configuration is used for all dependencies with very frequent updates.
-  #- package-ecosystem: "gradle"
-  #  directory: "/"
-  #  schedule:
-  #    interval: "monthly"
-  #  commit-message:
-  #    prefix: "[DEPENDENCY]"
-  #  labels:
-  #    - "dependencies"
-  #  open-pull-requests-limit: 100
-  #  allow:
-  #    #  Dependencies added here have to be ignored in 2. configuration
-  #    - dependency-name: "software.amazon.awssdk*"
-  #    - dependency-name: "com.google.cloud*"
+  - package-ecosystem: "gradle"
+    directory: "/"
+    # Add target-branch as a workaround to allow two configurations of
+    # the same package-ecosystem, directory and branch
+    # target-branch can therefore be removed after https://github.com/dependabot/dependabot-core/issues/1778
+    target-branch: main 
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "[DEPENDENCY]"
+    labels:
+      - "dependencies"
+    open-pull-requests-limit: 5
+    allow:
+      #  Dependencies added here have to be ignored in 2. configuration
+      - dependency-name: "software.amazon.awssdk*"
+      - dependency-name: "com.google.cloud*"
