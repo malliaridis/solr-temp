@@ -12,7 +12,7 @@ jobs:
   lockAndVerify:
     name: Lock and verify
 
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     # Run only on dependabot PRs (see dependabot-actions.yml)
     if: github.actor == 'dependabot[bot]'
@@ -71,7 +71,7 @@ jobs:
   test:
     name: gradle check
 
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     # Run after "dependabot" job, regardless if skipped or successful
     needs: lockAndVerify
