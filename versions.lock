@@ -476,7 +476,7 @@
       "org.threeten:threetenbp:1.6.9" : "784a94ea,refs=5",
       "org.tukaani:xz:1.9" : "50a667d1,refs=5",
       "org.xerial.snappy:snappy-java:1.1.10.5" : "99b82a6c,refs=82",
-      "org.yaml:snakeyaml:1.30" : "1e12e466,refs=2",
+      "org.yaml:snakeyaml:2.3" : "1e12e466,refs=2",
       "software.amazon.awssdk:annotations:2.26.19" : "87cc13ff,refs=5",
       "software.amazon.awssdk:apache-client:2.26.19" : "87cc13ff,refs=5",
       "software.amazon.awssdk:arns:2.26.19" : "87cc13ff,refs=5",
