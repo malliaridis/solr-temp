@@ -3,7 +3,7 @@ name: Dependabot Tasks
 on:
   pull_request:
     branches:
-      - 'dependabot/**' # Filter dependabot branches
+      - 'main' # dependabot will create PRs only towards main
 
 jobs:
   # Dependabot job that runs only for dependabot PRs
