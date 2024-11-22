@@ -11,6 +11,12 @@ on:
       - 'solr/prometheus-exporter/bin/**'
       - 'solr/docker/**'
       - 'solr/packaging/**'
+  # Wait for dependabot tasks to complete, if any
+  workflow_run:
+    workflows:
+      - Dependabot Tasks
+    types:
+      - completed
 
 jobs:
   test:
