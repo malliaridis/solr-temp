@@ -12,7 +12,6 @@ updates:
     # Security updates should not specify a target-branch
     schedule:
       interval: "daily"
-      time: "22:20"
     commit-message:
       prefix: "[SECURITY]"
     labels:
@@ -20,10 +19,15 @@ updates:
       - "cat:security"
     # Setting limit to 0 disables version-updates
     open-pull-requests-limit: 0
-    #ignore:
-    #  # Ignore all version-updates (allow only security-updates)
-    #  - dependency-name: "*"
-    #    update-types: ["version-update:semver-patch", "version-update:semver-minor", "version-update:semver-major"]
+    groups:
+      # Group calcite dependencies together in same PR
+      calcite:
+        patterns:
+          - "org.apache.calcite*"
+      # Group httpcomponents dependencies together in same PR
+      httpcomponents:
+        patterns:
+          - "org.apache.httpcomponents*"
 
   # 2. Non-security updates (bi-weekly, max 100 PRs)
   # This configuration is used for regular dependency updates.
@@ -32,7 +36,6 @@ updates:
     target-branch: main 
     schedule:
       interval: "daily"
-      time: "20:15"
     commit-message:
       prefix: "[DEPENDENCY]"
     labels:
