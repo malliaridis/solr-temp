@@ -191,6 +191,9 @@ allprojects {
                 handler.add(conf.name, libs.hamcrest.hamcrest, {
                     because 'version alignment for consistency across project'
                 })
+                handler.add(conf.name, libs.yaml.snakeyaml, {
+                    because 'Multiple vulnerabilities'
+                })
 
                 // Add transitive dependencies as constraints to align versions
                 handler.add(conf.name, libs.checkerframework.qual, {
