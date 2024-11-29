@@ -29,8 +29,7 @@ jobs:
 
     # Run only on PRs created by dependabot, this prevents users from misusing branch names
     # prefixed with dependabot/**
-    # Run this only once when the PR is opened.
-    if: github.actor == 'dependabot[bot]' && github.event.action.type == 'opened'
+    if: github.actor == 'dependabot[bot]'
 
     env:
       DEVELOCITY_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
