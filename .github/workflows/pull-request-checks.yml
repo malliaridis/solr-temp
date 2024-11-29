@@ -84,6 +84,7 @@ jobs:
 
     runs-on: self-hosted
     needs: lock-and-verify
+    if: always() && (needs.lock-and-verify.result == 'success' || needs.lock-and-verify.result == 'skipped')
 
     env:
       DEVELOCITY_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
