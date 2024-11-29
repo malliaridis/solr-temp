@@ -1,22 +1,23 @@
 name: Pull Request Checks
 
-on:
-  pull_request:
-    branches:
-      - 'main'
-      - 'branch_*'
-    types:
-      - opened
-      - labeled
-      - synchronize
-      - reopened
-      - unlabeled
-
 # This workflow makes use of labels to selectively run jobs. However, when a PR is opened and triggers
 # this workflow, the labels are not yet available. This means that we need to run this workflow twice
 # with different jobs "enabled".
 # If we add a dependency to the labeler, we would have to handle the label event separately, so we
 # add instead the labeled/unlabeled types to the pull_request event.
+
+# A dependency to the labeler workflow is necessary, but at the time the labels are needed,
+# the labeler should have finished its job.
+
+# IMPORTANT NOTE: If not enough action runners are available, and the labeler workflow is scheduled
+# after this workflow, tests will be skipped.
+# If we add a workflow dependency to the labeler, we would have to handle the label event separately.
+
+on:
+  pull_request:
+    branches:
+      - 'main'
+      - 'branch_*'
 
 jobs:
   # Dependabot job that runs only for dependabot PRs
@@ -28,7 +29,7 @@ jobs:
 
     # Run only on PRs created by dependabot, this prevents users from misusing branch names
     # prefixed with dependabot/**
-    # Additionally, run this only once when the PR is opened.
+    # Run this only once when the PR is opened.
     if: github.actor == 'dependabot[bot]' && github.event.action.type == 'opened'
 
     env:
@@ -93,10 +94,8 @@ jobs:
 
     # Always run, even if lock-and-verify is skipped
     # Run only when lock-and-verify is success or skipped
-    # Do not run immediately when PR is opened, only on follow-up events
     if: always() &&
-      (needs.lock-and-verify.result == 'success' || needs.lock-and-verify.result == 'skipped') &&
-      github.event.action.type != 'opened'
+      (needs.lock-and-verify.result == 'success' || needs.lock-and-verify.result == 'skipped')
 
     env:
       DEVELOCITY_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
@@ -142,9 +141,9 @@ jobs:
     # Run this job after pre-commit-checks where successful.
     needs: pre-commit-checks
 
-    # Run this job only if docker-related files were modified, that is, when label present
-    # This job is not executed if pre-commit-checks is not successful.
-    # Therefore, it is not executed on opened, but only on any follow-up events.
+    # Run this job always, even if any of the previous jobs were skipped.
+    # This job is executed only if the pre-commit-checks job is successful.
+    # Run this job only if docker-related files were modified, that is, when label present.
     if: always() &&
       needs.pre-commit-checks.result == 'success' &&
       contains(github.event.pull_request.labels.*.name, 'tests:docker')
@@ -199,9 +198,9 @@ jobs:
     # Run this job after pre-commit-checks where successful.
     needs: pre-commit-checks
 
-    # Run this job only if docker-related files were modified, that is, when label present
-    # This job is not executed if pre-commit-checks is not successful.
-    # Therefore, it is not executed on opened, but only on any follow-up events.
+    # Run this job always, even if any of the previous jobs were skipped.
+    # This job is executed only if the pre-commit-checks job is successful.
+    # Run this job only if solrj-related files were modified, that is, when label present.
     if: always() &&
       needs.pre-commit-checks.result == 'success' &&
       contains(github.event.pull_request.labels.*.name, 'tests:solrj')
@@ -248,9 +247,9 @@ jobs:
     # Run this job after pre-commit-checks where successful.
     needs: pre-commit-checks
 
-    # Run this job only if docker-related files were modified, that is, when label present
-    # This job is not executed if pre-commit-checks is not successful.
-    # Therefore, it is not executed on opened, but only on any follow-up events.
+    # Run this job always, even if any of the previous jobs were skipped.
+    # This job is executed only if the pre-commit-checks job is successful.
+    # Run this job only if script-related files were modified, that is, when label present.
     if: always() &&
       needs.pre-commit-checks.result == 'success' &&
       contains(github.event.pull_request.labels.*.name, 'tests:scripts')
