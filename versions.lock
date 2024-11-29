@@ -473,7 +473,7 @@
       "org.tallison:isoparser:1.9.41.7" : "50a667d1,refs=5",
       "org.tallison:jmatio:1.5" : "50a667d1,refs=5",
       "org.tallison:metadata-extractor:2.17.1.0" : "50a667d1,refs=5",
-      "org.threeten:threetenbp:1.6.9" : "784a94ea,refs=5",
+      "org.threeten:threetenbp:1.7.0" : "784a94ea,refs=5",
       "org.tukaani:xz:1.9" : "50a667d1,refs=5",
       "org.xerial.snappy:snappy-java:1.1.10.5" : "99b82a6c,refs=82",
       "org.yaml:snakeyaml:2.3" : "1e12e466,refs=2",
