@@ -1,14 +1,17 @@
 name: Pull Request Checks
 
 on:
-  workflow_run:
-    workflows:
-      # Wait for labeler to start to set labels used by job execution.
-      - 'Pull Request Labeler'
-    types:
-      # We can start when the labeler is in progress, as it should be finished
-      # by the time we reach jobs that require labels to be set.
-      - in_progress
+  pull_request:
+    branches:
+      - 'main'
+      - 'branch_*'
+# A dependency to the labeler workflow is necessary, but at the time the labels are needed,
+# the labeler should have finished its job.
+# If we add a dependency to the labeler, we would have to remove the pull_request
+# triggers to avoid multiple executions.
+
+# IMPORTANT NOTE: If not enough action runners are available, and the labeler workflow is scheduled
+# after this workflow, tests will be skipped.
 
 jobs:
   # Dependabot job that runs only for dependabot PRs
