@@ -19,7 +19,7 @@ jobs:
   lock-and-verify:
     name: Lock and verify
 
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     env:
       DEVELOCITY_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
@@ -80,7 +80,7 @@ jobs:
   pre-commit-checks:
     name: Gradle pre-commit Check
 
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: lock-and-verify
 
     env:
@@ -121,7 +121,7 @@ jobs:
   docker-test:
     name: Build and test Docker image
 
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     # Run this job after pre-commit-checks where successful.
     needs: pre-commit-checks
     # Run this job only if docker-related files were modified
@@ -171,7 +171,7 @@ jobs:
   solrj-test:
     name: Run SolrJ Tests
 
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     # Run this job after pre-commit-checks where successful.
     needs: pre-commit-checks
     # Run this job only if docker-related files were modified
@@ -213,7 +213,7 @@ jobs:
   script-test:
     name: Run Solr Script Tests
 
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     # Run this job after pre-commit-checks where successful.
     needs: pre-commit-checks
     # Run this job only if docker-related files were modified
