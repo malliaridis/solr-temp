@@ -1,0 +1,253 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    branches:
+      - 'main'
+      - 'branch_*'
+  # Wait for PR checks to complete
+  workflow_run:
+    workflows:
+      # Wait for labeler to set required labels
+      - 'Pull Request Labeler'
+    types:
+      - completed
+
+jobs:
+  # Dependabot job that runs only for dependabot PRs
+  # This job is writing locks, updates checksums, and commits the changes on the dependabot PRs.
+  lock-and-verify:
+    name: Lock and verify
+
+    runs-on: ubuntu-latest
+
+    env:
+      DEVELOCITY_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
+
+    # Run only on PRs created by dependabot, this prevents users from misusing branch names
+    # prefixed with dependabot/**
+    if: github.actor == 'dependabot[bot]'
+
+    # Give the default GITHUB_TOKEN write permission to commit
+    # and push the changed files back to the repository.
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+          java-package: jdk
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Use Gradle cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-precommit-${{ hashFiles('versions.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-precommit-
+            ${{ runner.os }}-gradle-
+
+      - name: Write locks
+        run: ./gradlew writeLocks
+
+      - name: Update licenses / checksums
+        run: ./gradlew updateLicenses
+
+      - name: Commit and push changes
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "Write locks and update checksums"
+          git push origin ${{ github.head_ref }}
+
+
+  # Pre-commit checks that allow quick failure on issues and prevent
+  # other jobs to run if they are going to fail anyway.
+  pre-commit-checks:
+    name: Gradle pre-commit Check
+
+    runs-on: ubuntu-latest
+    needs: lock-and-verify
+
+    env:
+      DEVELOCITY_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
+
+    steps:
+      # Setup
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+          java-package: jdk
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-precommit-${{ hashFiles('versions.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-precommit-
+            ${{ runner.os }}-gradle-
+
+      - name: Run gradle check (without tests)
+        run: ./gradlew check -x test -Ptask.times=true
+
+      - uses: gradle/wrapper-validation-action@v3
+
+  # Runs docker-related tests
+  docker-test:
+    name: Build and test Docker image
+
+    runs-on: ubuntu-latest
+    # Run this job after pre-commit-checks where successful.
+    needs: pre-commit-checks
+    # Run this job only if docker-related files were modified
+    if: ${{ github.event.label.name == 'tests:docker' }}
+
+    env:
+      SOLR_DOCKER_IMAGE_REPO: github-pr/solr
+      SOLR_DOCKER_IMAGE_TAG: ${{github.event.number}}
+      DEVELOCITY_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
+
+    steps:
+      # Setup
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+          java-package: jdk
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Install ACL
+        run: sudo apt-get install acl
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-docker-${{ hashFiles('versions.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-docker-
+            ${{ runner.os }}-gradle-
+
+      - name: Build Docker image with Gradle
+        run: ./gradlew solr:docker:docker
+
+      - name: Run tests on Docker image
+        run: ./gradlew solr:docker:testDocker
+
+  # SolrJ tests
+  solrj-test:
+    name: Run SolrJ Tests
+
+    runs-on: ubuntu-latest
+    # Run this job after pre-commit-checks where successful.
+    needs: pre-commit-checks
+    # Run this job only if docker-related files were modified
+    if: ${{ github.event.label.name == 'tests:solrj' }}
+
+    env:
+      DEVELOCITY_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
+
+    steps:
+      # Setup
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+          java-package: jdk
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-solrj-${{ hashFiles('versions.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-solrj-
+            ${{ runner.os }}-gradle-
+
+      - name: Test the SolrJ Package
+        run: ./gradlew solr:solrj:test
+
+  # Script tests
+  script-test:
+    name: Run Solr Script Tests
+
+    runs-on: ubuntu-latest
+    # Run this job after pre-commit-checks where successful.
+    needs: pre-commit-checks
+    # Run this job only if docker-related files were modified
+    if: ${{ github.event.label.name == 'tests:scripts' }}
+
+    env:
+      DEVELOCITY_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
+
+    steps:
+      # Setup
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+          java-package: jdk
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-binsolr-${{ hashFiles('versions.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-binsolr-
+            ${{ runner.os }}-gradle-
+      - name: Test the bin/solr script
+        run: ./gradlew integrationTests
+      - name: Archive logs
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs
+          path: solr/packaging/build/test-output

@@ -1,14 +1,10 @@
 name: Solr Tests
 
 on:
-  pull_request:
-    branches:
-      - 'main'
-      - 'branch_*'
-  # Wait for dependabot tasks to complete, if any
+  # Wait for PR checks to complete
   workflow_run:
     workflows:
-      - Dependabot Tasks
+      - 'Pull Request Checks'
     types:
       - completed
 
@@ -17,8 +13,8 @@ jobs:
     name: Run Solr Tests using Crave.io resources
 
     runs-on: self-hosted
-    # Disable crave.io in private project clone
-    if: false
+    # Continue only if dependabot workflow is successful
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
     - name: Destroy previous clone
