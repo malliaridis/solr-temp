@@ -76,6 +76,8 @@ jobs:
 
       - name: Commit and push changes
         run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@github.com
           git add .
           git commit -m "Write locks and update checksums"
           git push origin ${{ github.head_ref }}
