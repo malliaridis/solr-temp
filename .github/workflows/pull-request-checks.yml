@@ -1,17 +1,14 @@
 name: Pull Request Checks
 
 on:
-  pull_request:
-    branches:
-      - 'main'
-      - 'branch_*'
-  # Wait for PR checks to complete
   workflow_run:
     workflows:
-      # Wait for labeler to set required labels
+      # Wait for labeler to start to set labels used by job execution.
       - 'Pull Request Labeler'
     types:
-      - completed
+      # We can start when the labeler is in progress, as it should be finished
+      # by the time we reach jobs that require labels to be set.
+      - in_progress
 
 jobs:
   # Dependabot job that runs only for dependabot PRs
@@ -130,7 +127,7 @@ jobs:
     # Run this job after pre-commit-checks where successful.
     needs: pre-commit-checks
     # Run this job only if docker-related files were modified
-    if: ${{ github.event.label.name == 'tests:docker' }}
+    if: contains(github.event.pull_request.labels.*.name, 'tests:docker')
 
     env:
       SOLR_DOCKER_IMAGE_REPO: github-pr/solr
@@ -182,7 +179,7 @@ jobs:
     # Run this job after pre-commit-checks where successful.
     needs: pre-commit-checks
     # Run this job only if docker-related files were modified
-    if: ${{ github.event.label.name == 'tests:solrj' }}
+    if: contains(github.event.pull_request.labels.*.name, 'tests:solrj')
 
     env:
       DEVELOCITY_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
@@ -226,7 +223,7 @@ jobs:
     # Run this job after pre-commit-checks where successful.
     needs: pre-commit-checks
     # Run this job only if docker-related files were modified
-    if: ${{ github.event.label.name == 'tests:scripts' }}
+    if: contains(github.event.pull_request.labels.*.name, 'tests:scripts')
 
     env:
       DEVELOCITY_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
