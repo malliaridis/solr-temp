@@ -115,7 +115,7 @@ google-protobuf = "3.25.3"
 google-re2j = "1.7"
 # @keep Gradle version to run the build
 gradle = "8.10"
-grpc = "1.65.1"
+grpc = "1.68.1"
 # @keep Gulp version used in ref-guide
 gulp-cli = "2.3.0"
 hamcrest = "3.0"
