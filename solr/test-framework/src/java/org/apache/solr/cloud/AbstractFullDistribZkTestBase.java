@@ -85,7 +85,7 @@ import org.apache.solr.common.util.IOUtils;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.common.util.SolrNamedThreadFactory;
 import org.apache.solr.common.util.StrUtils;
-import org.apache.solr.common.util.TimeSource;
+import org.apache.solr.common.util.TimeSources;
 import org.apache.solr.common.util.Utils;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.Diagnostics;
@@ -177,8 +177,7 @@ public abstract class AbstractFullDistribZkTestBase extends AbstractDistribZkTes
     @Override
     public boolean equals(Object obj) {
       if (this == obj) return true;
-      if (!(obj instanceof CloudJettyRunner)) return false;
-      CloudJettyRunner other = (CloudJettyRunner) obj;
+      if (!(obj instanceof CloudJettyRunner other)) return false;
       return Objects.equals(url, other.url);
     }
 
@@ -215,8 +214,7 @@ public abstract class AbstractFullDistribZkTestBase extends AbstractDistribZkTes
     @Override
     public boolean equals(Object obj) {
       if (this == obj) return true;
-      if (!(obj instanceof CloudSolrServerClient)) return false;
-      CloudSolrServerClient other = (CloudSolrServerClient) obj;
+      if (!(obj instanceof CloudSolrServerClient other)) return false;
       return Objects.equals(solrClient, other.solrClient);
     }
   }
@@ -2349,7 +2347,7 @@ public abstract class AbstractFullDistribZkTestBase extends AbstractDistribZkTes
   public static void waitForNon403or404or503(SolrClient collectionClient, String baseUrl)
       throws Exception {
     SolrException exp = null;
-    final TimeOut timeout = new TimeOut(30, TimeUnit.SECONDS, TimeSource.NANO_TIME);
+    final TimeOut timeout = new TimeOut(30, TimeUnit.SECONDS, TimeSources.NANO_TIME);
 
     while (!timeout.hasTimedOut()) {
       boolean missing = false;
@@ -2807,7 +2805,7 @@ public abstract class AbstractFullDistribZkTestBase extends AbstractDistribZkTes
       String requestId, int waitForSeconds, SolrClient client)
       throws IOException, SolrServerException {
     RequestStatusState state = null;
-    final TimeOut timeout = new TimeOut(waitForSeconds, TimeUnit.SECONDS, TimeSource.NANO_TIME);
+    final TimeOut timeout = new TimeOut(waitForSeconds, TimeUnit.SECONDS, TimeSources.NANO_TIME);
 
     while (!timeout.hasTimedOut()) {
       state = getRequestState(requestId, client);

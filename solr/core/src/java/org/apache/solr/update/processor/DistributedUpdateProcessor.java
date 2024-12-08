@@ -45,7 +45,7 @@ import org.apache.solr.common.params.ShardParams;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.params.UpdateParams;
 import org.apache.solr.common.util.NamedList;
-import org.apache.solr.common.util.TimeSource;
+import org.apache.solr.common.util.TimeSources;
 import org.apache.solr.handler.component.RealTimeGetComponent;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.response.SolrQueryResponse;
@@ -560,7 +560,7 @@ public class DistributedUpdateProcessor extends UpdateRequestProcessor {
    */
   private long waitForDependentUpdates(
       AddUpdateCommand cmd, long versionOnUpdate, boolean isReplayOrPeersync) throws IOException {
-    TimeOut waitTimeout = new TimeOut(5, TimeUnit.SECONDS, TimeSource.NANO_TIME);
+    TimeOut waitTimeout = new TimeOut(5, TimeUnit.SECONDS, TimeSources.NANO_TIME);
 
     long lastFoundVersion =
         getUpdateLocks()
@@ -1229,8 +1229,7 @@ public class DistributedUpdateProcessor extends UpdateRequestProcessor {
       // create a merged copy of the metadata from all wrapped exceptions
       NamedList<String> metadata = new NamedList<>();
       for (SolrError error : errors) {
-        if (error.e instanceof SolrException) {
-          SolrException e = (SolrException) error.e;
+        if (error.e instanceof SolrException e) {
           NamedList<String> eMeta = e.getMetadata();
           if (null != eMeta) {
             metadata.addAll(eMeta);

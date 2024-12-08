@@ -345,14 +345,14 @@ public class ClusterState implements MapWriter {
     Object routerObj = props.get(CollectionStateProps.DOC_ROUTER);
     DocRouter router;
     if (routerObj == null) {
-      router = DocRouter.DEFAULT;
+      router = DocRouters.DEFAULT;
     } else if (routerObj instanceof String) {
       // back compat with Solr4.4
-      router = DocRouter.getDocRouter((String) routerObj);
+      router = DocRouters.getDocRouter((String) routerObj);
     } else {
       @SuppressWarnings({"rawtypes"})
       Map routerProps = (Map) routerObj;
-      router = DocRouter.getDocRouter((String) routerProps.get("name"));
+      router = DocRouters.getDocRouter((String) routerProps.get("name"));
     }
 
     return DocCollection.create(name, slices, props, router, version, creationTime, prsSupplier);
@@ -379,8 +379,7 @@ public class ClusterState implements MapWriter {
   @Override
   public boolean equals(Object obj) {
     if (this == obj) return true;
-    if (!(obj instanceof ClusterState)) return false;
-    ClusterState other = (ClusterState) obj;
+    if (!(obj instanceof ClusterState other)) return false;
     if (liveNodes == null) {
       return other.liveNodes == null;
     } else return liveNodes.equals(other.liveNodes);

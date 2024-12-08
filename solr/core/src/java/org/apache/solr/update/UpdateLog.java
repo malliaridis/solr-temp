@@ -72,7 +72,7 @@ import org.apache.solr.common.util.ExecutorUtil;
 import org.apache.solr.common.util.IOUtils;
 import org.apache.solr.common.util.SolrNamedThreadFactory;
 import org.apache.solr.common.util.SuppressForbidden;
-import org.apache.solr.common.util.TimeSource;
+import org.apache.solr.common.util.TimeSources;
 import org.apache.solr.core.DirectoryFactory;
 import org.apache.solr.core.PluginInfo;
 import org.apache.solr.core.SolrCore;
@@ -1215,8 +1215,7 @@ public class UpdateLog implements PluginInfoInitialized, SolrMetricProducer {
                 lookupVersion);
           }
 
-          if (obj != null && obj instanceof List) {
-            List<?> tmpEntry = (List<?>) obj;
+          if (obj != null && obj instanceof List<?> tmpEntry) {
             if (tmpEntry.size() >= 2
                 &&
                 // why not Objects.equals(lookupVersion, tmpEntry.get())?
@@ -2307,7 +2306,7 @@ public class UpdateLog implements PluginInfoInitialized, SolrMetricProducer {
 
     private void waitForAllUpdatesGetExecuted(AtomicInteger pendingTasks) {
       TimeOut timeOut =
-          new TimeOut(Integer.MAX_VALUE, TimeUnit.MILLISECONDS, TimeSource.CURRENT_TIME);
+          new TimeOut(Integer.MAX_VALUE, TimeUnit.MILLISECONDS, TimeSources.CURRENT_TIME);
       try {
         timeOut.waitFor(
             "Timeout waiting for replay updates finish",

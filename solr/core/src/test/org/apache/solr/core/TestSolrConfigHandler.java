@@ -41,7 +41,7 @@ import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.common.LinkedHashMapWriter;
 import org.apache.solr.common.MapWriter;
 import org.apache.solr.common.util.StrUtils;
-import org.apache.solr.common.util.TimeSource;
+import org.apache.solr.common.util.TimeSources;
 import org.apache.solr.common.util.Utils;
 import org.apache.solr.common.util.ValidatingJsonMap;
 import org.apache.solr.handler.DumpRequestHandler;
@@ -718,7 +718,7 @@ public class TestSolrConfigHandler extends RestTestBase {
     boolean success = false;
     LinkedHashMapWriter m = null;
 
-    TimeOut timeOut = new TimeOut(maxTimeoutSeconds, TimeUnit.SECONDS, TimeSource.NANO_TIME);
+    TimeOut timeOut = new TimeOut(maxTimeoutSeconds, TimeUnit.SECONDS, TimeSources.NANO_TIME);
     while (!timeOut.hasTimedOut()) {
       try {
         m =
@@ -732,9 +732,7 @@ public class TestSolrConfigHandler extends RestTestBase {
       }
       Object actual = Utils.getObjectByPath(m, false, jsonPath);
 
-      if (expected instanceof ValidatingJsonMap.PredicateWithErrMsg) {
-        ValidatingJsonMap.PredicateWithErrMsg predicate =
-            (ValidatingJsonMap.PredicateWithErrMsg) expected;
+      if (expected instanceof ValidatingJsonMap.PredicateWithErrMsg predicate) {
         if (predicate.test(actual) == null) {
           success = true;
           break;
@@ -982,8 +980,7 @@ public class TestSolrConfigHandler extends RestTestBase {
             new ValidatingJsonMap.PredicateWithErrMsg<>() {
               @Override
               public String test(Object o) {
-                if (o instanceof Map) {
-                  Map<?, ?> m = (Map<?, ?>) o;
+                if (o instanceof Map<?, ?> m) {
                   if ("part1_Value".equals(m.get("part1")) && "part2_Value".equals(m.get("part2")))
                     return null;
                 }

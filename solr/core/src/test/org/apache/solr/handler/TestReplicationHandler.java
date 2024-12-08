@@ -65,13 +65,14 @@ import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.NamedList;
-import org.apache.solr.common.util.TimeSource;
+import org.apache.solr.common.util.TimeSources;
 import org.apache.solr.core.CachingDirectoryFactory;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.core.StandardDirectoryFactory;
 import org.apache.solr.core.snapshots.SolrSnapshotMetaDataManager;
 import org.apache.solr.embedded.JettySolrRunner;
+import org.apache.solr.handler.admin.api.ReplicationAPIBase;
 import org.apache.solr.security.AllowListUrlChecker;
 import org.apache.solr.util.TestInjection;
 import org.apache.solr.util.TimeOut;
@@ -713,7 +714,7 @@ public class TestReplicationHandler extends SolrTestCaseJ4 {
       leaderJetty.stop();
 
       final TimeOut waitForLeaderToShutdown =
-          new TimeOut(300, TimeUnit.SECONDS, TimeSource.NANO_TIME);
+          new TimeOut(300, TimeUnit.SECONDS, TimeSources.NANO_TIME);
       waitForLeaderToShutdown.waitFor(
           "Gave up after waiting an obscene amount of time for leader to shut down",
           () -> leaderJetty.isStopped());
@@ -752,7 +753,7 @@ public class TestReplicationHandler extends SolrTestCaseJ4 {
 
       leaderJetty.start();
 
-      final TimeOut waitForLeaderToStart = new TimeOut(30, TimeUnit.SECONDS, TimeSource.NANO_TIME);
+      final TimeOut waitForLeaderToStart = new TimeOut(30, TimeUnit.SECONDS, TimeSources.NANO_TIME);
       waitForLeaderToStart.waitFor(
           "Gave up after waiting an obscene amount of time for leader to start",
           () -> leaderJetty.isRunning());
@@ -1518,9 +1519,9 @@ public class TestReplicationHandler extends SolrTestCaseJ4 {
         Arrays.asList(absFile, "../dir/traversal", "illegal\rfile\nname\t");
     List<String> params =
         Arrays.asList(
-            ReplicationHandler.FILE,
-            ReplicationHandler.CONF_FILE_SHORT,
-            ReplicationHandler.TLOG_FILE);
+            ReplicationAPIBase.FILE,
+            ReplicationAPIBase.CONF_FILE_SHORT,
+            ReplicationAPIBase.TLOG_FILE);
     for (String param : params) {
       for (String filename : illegalFilenames) {
         expectThrows(
@@ -1617,7 +1618,7 @@ public class TestReplicationHandler extends SolrTestCaseJ4 {
                       "name",
                       backupName))
               .setRequiresCollection(true);
-      final TimeOut timeout = new TimeOut(30, TimeUnit.SECONDS, TimeSource.NANO_TIME);
+      final TimeOut timeout = new TimeOut(30, TimeUnit.SECONDS, TimeSources.NANO_TIME);
       final SimpleSolrResponse rsp = req.process(leaderClient);
 
       final String dirName = backupStatus.waitForBackupSuccess(backupName, timeout);
@@ -1646,7 +1647,7 @@ public class TestReplicationHandler extends SolrTestCaseJ4 {
                       "name",
                       backupName))
               .setRequiresCollection(true);
-      final TimeOut timeout = new TimeOut(30, TimeUnit.SECONDS, TimeSource.NANO_TIME);
+      final TimeOut timeout = new TimeOut(30, TimeUnit.SECONDS, TimeSources.NANO_TIME);
       final SimpleSolrResponse rsp = req.process(leaderClient);
 
       final String dirName = backupStatus.waitForBackupSuccess(backupName, timeout);

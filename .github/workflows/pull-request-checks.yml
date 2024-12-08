@@ -43,7 +43,7 @@ jobs:
       - name: Checkout project
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
+          fetch-depth: 2
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -103,7 +103,7 @@ jobs:
       # Setup
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
+          fetch-depth: 2
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -156,7 +156,7 @@ jobs:
       # Setup
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
+          fetch-depth: 2
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -211,7 +211,7 @@ jobs:
       # Setup
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
+          fetch-depth: 2
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -260,7 +260,7 @@ jobs:
       # Setup
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
+          fetch-depth: 2
 
       - name: Set up JDK
         uses: actions/setup-java@v4

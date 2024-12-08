@@ -290,7 +290,7 @@ allprojects { prj ->
             '-Xep:ChainedAssertionLosesContext:WARN',
             '-Xep:CharacterGetNumericValue:WARN',
             '-Xep:ClassCanBeStatic:WARN',
-            // '-Xep:ClassInitializationDeadlock:WARN', // todo check if useful or comment why not
+            '-Xep:ClassInitializationDeadlock:WARN',
             '-Xep:ClassNewInstance:WARN',
             // '-Xep:CloseableProvides:OFF', // we don't use this annotation
             '-Xep:ClosingStandardOutputStreams:WARN',
@@ -457,7 +457,7 @@ allprojects { prj ->
             '-Xep:Overrides:WARN',
             // '-Xep:OverridesGuiceInjectableMethod:OFF', // we don't use guice
             '-Xep:ParameterName:WARN',
-            // '-Xep:PatternMatchingInstanceof:WARN', // todo check if useful or comment why not
+            '-Xep:PatternMatchingInstanceof:WARN',
             '-Xep:PreconditionsCheckNotNullRepeated:WARN',
             '-Xep:PrimitiveAtomicReference:WARN',
             '-Xep:ProtectedMembersInFinalClass:WARN',

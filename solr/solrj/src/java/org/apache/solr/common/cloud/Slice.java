@@ -176,7 +176,7 @@ public class Slice extends ZkNodeProps implements Iterable<Replica> {
       tmpRange = (DocRouter.Range) rangeObj;
     } else if (rangeObj != null) {
       // Doesn't support custom implementations of Range, but currently not needed.
-      tmpRange = DocRouter.DEFAULT.fromString(rangeObj.toString());
+      tmpRange = DocRouters.DEFAULT.fromString(rangeObj.toString());
     }
     range = tmpRange;
 
@@ -206,8 +206,7 @@ public class Slice extends ZkNodeProps implements Iterable<Replica> {
       this.routingRules = new HashMap<>();
       for (Map.Entry<String, Object> entry : rules.entrySet()) {
         Object o = entry.getValue();
-        if (o instanceof Map) {
-          Map map = (Map) o;
+        if (o instanceof Map map) {
           RoutingRule rule = new RoutingRule(entry.getKey(), map);
           routingRules.put(entry.getKey(), rule);
         } else {

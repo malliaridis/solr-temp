@@ -66,7 +66,7 @@ import org.apache.solr.common.cloud.ZkStateReader;
 import org.apache.solr.common.params.CollectionParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.util.NamedList;
-import org.apache.solr.common.util.TimeSource;
+import org.apache.solr.common.util.TimeSources;
 import org.apache.solr.common.util.Utils;
 import org.apache.solr.embedded.JettySolrRunner;
 import org.apache.solr.update.SolrIndexSplitter;
@@ -705,7 +705,7 @@ public class ShardSplitTest extends BasicDistributedZkTest {
       Thread t = new Thread(r);
       t.start();
       // wait for the split to start executing
-      TimeOut timeOut = new TimeOut(30, TimeUnit.SECONDS, TimeSource.NANO_TIME);
+      TimeOut timeOut = new TimeOut(30, TimeUnit.SECONDS, TimeSources.NANO_TIME);
       while (!timeOut.hasTimedOut()) {
         timeOut.sleep(500);
         if (ZkStateReader.from(cloudClient).getZkClient().exists(path, true)) {
@@ -729,7 +729,7 @@ public class ShardSplitTest extends BasicDistributedZkTest {
           ZkStateReader.from(cloudClient).getZkClient().exists(path, true));
       // let the first split proceed
       TestInjection.splitLatch.countDown();
-      timeOut = new TimeOut(30, TimeUnit.SECONDS, TimeSource.NANO_TIME);
+      timeOut = new TimeOut(30, TimeUnit.SECONDS, TimeSources.NANO_TIME);
       while (!timeOut.hasTimedOut()) {
         timeOut.sleep(500);
         if (!ZkStateReader.from(cloudClient).getZkClient().exists(path, true)) {
@@ -1320,8 +1320,7 @@ public class ShardSplitTest extends BasicDistributedZkTest {
 
   public static int getHashRangeIdx(DocRouter router, List<DocRouter.Range> ranges, String id) {
     int hash = 0;
-    if (router instanceof HashBasedRouter) {
-      HashBasedRouter hashBasedRouter = (HashBasedRouter) router;
+    if (router instanceof HashBasedRouter hashBasedRouter) {
       hash = hashBasedRouter.sliceHash(id, null, null, null);
     }
     for (int i = 0; i < ranges.size(); i++) {

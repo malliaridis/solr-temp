@@ -41,7 +41,7 @@ import org.apache.solr.cloud.ZkSolrResourceLoader;
 import org.apache.solr.common.SolrException;
 import org.apache.solr.common.cloud.SolrZkClient;
 import org.apache.solr.common.util.CommandOperation;
-import org.apache.solr.common.util.TimeSource;
+import org.apache.solr.common.util.TimeSources;
 import org.apache.solr.core.CoreDescriptor;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.core.SolrResourceLoader;
@@ -100,7 +100,7 @@ public class SchemaManager {
 
   private List<Map<String, Object>> doOperations(List<CommandOperation> operations)
       throws InterruptedException, IOException, KeeperException {
-    TimeOut timeOut = new TimeOut(updateTimeOut, TimeUnit.SECONDS, TimeSource.NANO_TIME);
+    TimeOut timeOut = new TimeOut(updateTimeOut, TimeUnit.SECONDS, TimeSources.NANO_TIME);
     SolrCore core = req.getCore();
     String errorMsg = "Unable to persist managed schema. ";
     List<Map<String, Object>> errors = Collections.emptyList();
@@ -120,8 +120,7 @@ public class SchemaManager {
         errors = CommandOperation.captureErrors(operations);
         if (!errors.isEmpty()) break;
         SolrResourceLoader loader = req.getCore().getResourceLoader();
-        if (loader instanceof ZkSolrResourceLoader) {
-          ZkSolrResourceLoader zkLoader = (ZkSolrResourceLoader) loader;
+        if (loader instanceof ZkSolrResourceLoader zkLoader) {
           StringWriter sw = new StringWriter();
           try {
             managedIndexSchema.persist(sw);
@@ -484,8 +483,7 @@ public class SchemaManager {
 
     SolrResourceLoader resourceLoader = core.getResourceLoader();
     String schemaResourceName = core.getLatestSchema().getResourceName();
-    if (resourceLoader instanceof ZkSolrResourceLoader) {
-      final ZkSolrResourceLoader zkLoader = (ZkSolrResourceLoader) resourceLoader;
+    if (resourceLoader instanceof ZkSolrResourceLoader zkLoader) {
       SolrZkClient zkClient = zkLoader.getZkController().getZkClient();
       String managedSchemaPath = zkLoader.getConfigSetZkPath() + "/" + schemaResourceName;
       try {
