@@ -19,7 +19,6 @@ on:
       - "Dependabot Tasks"
     types:
       - completed
-      - skipped
 
 jobs:
 

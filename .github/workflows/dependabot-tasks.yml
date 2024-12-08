@@ -90,5 +90,3 @@ jobs:
           git add .
           git commit -m "Write locks and update checksums"
           git push origin ${{ github.head_ref }}
-
-
