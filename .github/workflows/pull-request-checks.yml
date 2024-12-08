@@ -22,6 +22,54 @@ on:
       - skipped
 
 jobs:
+
+  # Pre-commit checks that allow quick failure on issues and prevent
+  # other jobs to run if they are going to fail anyway.
+  pre-commit-checks:
+    name: Gradle pre-commit Check
+
+    runs-on: self-hosted
+
+    # Always run, even if lock-and-verify is skipped
+    # Run only when lock-and-verify is skipped, that is, when it is not the initial commit from dependabot.
+    if: always() && needs.lock-and-verify.result == 'skipped'
+
+    env:
+      DEVELOCITY_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
+
+    steps:
+      # Setup
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+          java-package: jdk
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-precommit-${{ hashFiles('versions.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-precommit-
+            ${{ runner.os }}-gradle-
+
+      - name: Run gradle check (without tests)
+        run: ./gradlew check -x test -Ptask.times=true
+
+      - uses: gradle/wrapper-validation-action@v3
+
   # Runs docker-related tests
   docker-test:
     name: Build and test Docker image
