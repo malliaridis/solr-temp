@@ -13,7 +13,7 @@ on:
 jobs:
   stale:
     if: github.repository == 'apache/solr'
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     permissions:
       pull-requests: write
       actions: write

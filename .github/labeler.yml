@@ -2,22 +2,22 @@
 dependencies:
   - changed-files:
       - any-glob-to-any-file:
-        - gradle/libs.versions.toml # Solr 10+
-        - versions.props # Solr < v10
-        - versions.lock
-        - solr/licenses/**
+          - gradle/libs.versions.toml # Solr 10+
+          - versions.props # Solr < v10
+          - versions.lock
+          - solr/licenses/**
 
 # Add 'documentation' label to any changes within ref-guide or dev-docs
 documentation:
   - changed-files:
       - any-glob-to-any-file:
-        - dev-docs/**
-        - solr/solr-ref-guide/**
-        - solr/documentation/**
-        - help/**
-        - solr/README.adoc
-        - CONTRIBUTING.md
-        - README.md
+          - dev-docs/**
+          - solr/solr-ref-guide/**
+          - solr/documentation/**
+          - help/**
+          - solr/README.adoc
+          - CONTRIBUTING.md
+          - README.md
 
 # Add 'examples' label to examples
 examples:
@@ -35,7 +35,7 @@ bats-tests:
 docker:
   - changed-files:
       - any-glob-to-any-file:
-        - solr/docker/**
+          - solr/docker/**
 
 # Add 'tool:build' label for changes to gradle build files
 tool:build:
@@ -86,9 +86,9 @@ client:solrj:
 
 # Add 'test-framework' label
 test-framework:
-    - changed-files:
-        - any-glob-to-any-file:
-            - solr/test-framework/**
+  - changed-files:
+      - any-glob-to-any-file:
+          - solr/test-framework/**
 
 # Add 'admin-ui' label
 admin-ui:
@@ -241,3 +241,25 @@ cat:security:
   - changed-files:
       - any-glob-to-any-file:
           - '**/org/apache/solr/security/**'
+
+# TODO Consider merging below labels with existing ones
+tests:docker:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'solr/bin/**'
+          - 'solr/prometheus-exporter/bin/**'
+          - 'solr/docker/**'
+          - 'solr/packaging/**'
+
+tests:solrj:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'solr/solrj/**'
+
+tests:scripts:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'solr/bin/**'
+          - 'solr/packaging/**'
+          - 'solr/core/src/java/org/apache/solr/cli/**'
+          - 'solr/prometheus-exporter/**'
