@@ -14,13 +14,79 @@ name: Pull Request Checks
 # If we add a workflow dependency to the labeler, we would have to handle the label event separately.
 
 on:
-  workflow_run:
-    workflows:
-      - "Dependabot Tasks"
-    types:
-      - completed
+  pull_request:
+    branches:
+      - 'main'
+      - 'branch_*'
+
+  push:
+    branches:
+      - 'main'
+      - 'branch_*'
 
 jobs:
+  # Dependabot job that runs only for dependabot PRs
+  # This job is writing locks, updates checksums, and commits the changes on the dependabot PRs.
+  lock-and-verify:
+    name: Lock and verify
+
+    runs-on: self-hosted
+
+    # Run only on PRs created by dependabot, this prevents users from misusing branch names
+    # prefixed with dependabot/**
+    if: github.actor == 'dependabot[bot]'
+
+    env:
+      DEVELOCITY_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
+
+    # Give the default GITHUB_TOKEN write permission to commit
+    # and push the changed files back to the repository.
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+          java-package: jdk
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Use Gradle cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-precommit-${{ hashFiles('versions.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-precommit-
+            ${{ runner.os }}-gradle-
+
+      - name: Write locks
+        run: ./gradlew writeLocks
+
+      - name: Update licenses / checksums
+        run: ./gradlew updateLicenses
+
+      - name: Commit and push changes
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add .
+          git commit -m "Write locks and update checksums"
+          git push origin ${{ github.head_ref }}
+
 
   # Pre-commit checks that allow quick failure on issues and prevent
   # other jobs to run if they are going to fail anyway.
@@ -28,6 +94,11 @@ jobs:
     name: Gradle pre-commit Check
 
     runs-on: self-hosted
+    needs: lock-and-verify
+
+    # Always run, even if lock-and-verify is skipped
+    # Run only when lock-and-verify is success or skipped
+    if: always() && needs.lock-and-verify.result == 'skipped'
 
     env:
       DEVELOCITY_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
@@ -70,6 +141,8 @@ jobs:
     name: Build and test Docker image
 
     runs-on: self-hosted
+    # Run this job after pre-commit-checks were successful.
+    needs: pre-commit-checks
 
     # Run this job always, even if any of the previous jobs were skipped.
     # This job is executed only if the pre-commit-checks job is successful.
@@ -127,6 +200,8 @@ jobs:
     name: Run SolrJ Tests
 
     runs-on: self-hosted
+    # Run this job after pre-commit-checks were successful.
+    needs: pre-commit-checks
 
     # Run this job always, even if any of the previous jobs were skipped.
     # This job is executed only if the pre-commit-checks job is successful.
@@ -176,6 +251,8 @@ jobs:
     name: Run Solr Script Tests
 
     runs-on: self-hosted
+    # Run this job after pre-commit-checks were successful.
+    needs: pre-commit-checks
 
     # Run this job always, even if any of the previous jobs were skipped.
     # This job is executed only if the pre-commit-checks job is successful.
@@ -231,6 +308,8 @@ jobs:
     name: Run Solr Tests using Crave.io resources
 
     runs-on: self-hosted
+    # Run this job after pre-commit-checks were successful.
+    needs: pre-commit-checks
 
     # Run this job always, even if any of the previous jobs were skipped.
     # This job is executed only if the pre-commit-checks job is successful.
