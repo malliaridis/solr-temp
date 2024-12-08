@@ -19,11 +19,6 @@ on:
       - 'main'
       - 'branch_*'
 
-  push:
-    branches:
-      - 'main'
-      - 'branch_*'
-
 jobs:
   # Dependabot job that runs only for dependabot PRs
   # This job is writing locks, updates checksums, and commits the changes on the dependabot PRs.
@@ -98,7 +93,8 @@ jobs:
 
     # Always run, even if lock-and-verify is skipped
     # Run only when lock-and-verify is success or skipped
-    if: always() && needs.lock-and-verify.result == 'skipped'
+    if: always() &&
+      (needs.lock-and-verify.result == 'success' || needs.lock-and-verify.result == 'skipped')
 
     env:
       DEVELOCITY_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
@@ -148,10 +144,8 @@ jobs:
     # This job is executed only if the pre-commit-checks job is successful.
     # Run this job only if docker-related files were modified, that is, when label present.
     if: always() &&
-      needs.pre-commit-checks.result == 'success' && (
-        contains(github.event.pull_request.labels.*.name, 'tests:docker')
-        || contains(github.event.push.labels.*.name, 'tests:docker')
-      )
+      needs.pre-commit-checks.result == 'success' &&
+      contains(github.event.pull_request.labels.*.name, 'tests:docker')
 
     env:
       SOLR_DOCKER_IMAGE_REPO: github-pr/solr
@@ -207,10 +201,8 @@ jobs:
     # This job is executed only if the pre-commit-checks job is successful.
     # Run this job only if solrj-related files were modified, that is, when label present.
     if: always() &&
-      needs.pre-commit-checks.result == 'success' && (
-        contains(github.event.pull_request.labels.*.name, 'tests:solrj')
-        || contains(github.event.push.labels.*.name, 'tests:solrj')
-      )
+      needs.pre-commit-checks.result == 'success' &&
+      contains(github.event.pull_request.labels.*.name, 'tests:solrj')
 
     env:
       DEVELOCITY_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
@@ -258,10 +250,8 @@ jobs:
     # This job is executed only if the pre-commit-checks job is successful.
     # Run this job only if script-related files were modified, that is, when label present.
     if: always() &&
-      needs.pre-commit-checks.result == 'success' && (
-        contains(github.event.pull_request.labels.*.name, 'tests:scripts')
-        || contains(github.event.push.labels.*.name, 'tests:scripts')
-      )
+      needs.pre-commit-checks.result == 'success' &&
+      contains(github.event.pull_request.labels.*.name, 'tests:scripts')
 
     env:
       DEVELOCITY_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
