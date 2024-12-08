@@ -1,4 +1,4 @@
-name: Pull Request Checks
+name: Dependabot Tasks
 
 # This workflow makes use of labels to selectively run jobs. However, when a PR is opened and triggers
 # this workflow, the labels are not yet available. This means that we need to run this workflow twice
@@ -14,12 +14,16 @@ name: Pull Request Checks
 # If we add a workflow dependency to the labeler, we would have to handle the label event separately.
 
 on:
-  workflow_run:
-    workflows:
-      - "Dependabot Tasks"
-    types:
-      - completed
-      - skipped
+  pull_request:
+    branches:
+      - 'main'
+      - 'branch_*'
+
+  # Execute on push so that when dependabot pushes changes, it will properly re-trigger the workflow.
+  push:
+    branches:
+      - 'main'
+      - 'branch_*'
 
 jobs:
   # Dependabot job that runs only for dependabot PRs
@@ -87,11 +91,62 @@ jobs:
           git commit -m "Write locks and update checksums"
           git push origin ${{ github.head_ref }}
 
+
+  # Pre-commit checks that allow quick failure on issues and prevent
+  # other jobs to run if they are going to fail anyway.
+  pre-commit-checks:
+    name: Gradle pre-commit Check
+
+    runs-on: self-hosted
+    needs: lock-and-verify
+
+    # Always run, even if lock-and-verify is skipped
+    # Run only when lock-and-verify is skipped, that is, when it is not the initial commit from dependabot.
+    if: always() && needs.lock-and-verify.result == 'skipped'
+
+    env:
+      DEVELOCITY_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
+
+    steps:
+      # Setup
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+          java-package: jdk
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-precommit-${{ hashFiles('versions.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-precommit-
+            ${{ runner.os }}-gradle-
+
+      - name: Run gradle check (without tests)
+        run: ./gradlew check -x test -Ptask.times=true
+
+      - uses: gradle/wrapper-validation-action@v3
+
   # Runs docker-related tests
   docker-test:
     name: Build and test Docker image
 
     runs-on: self-hosted
+    # Run this job after pre-commit-checks were successful.
+    needs: pre-commit-checks
 
     # Run this job always, even if any of the previous jobs were skipped.
     # This job is executed only if the pre-commit-checks job is successful.
@@ -149,6 +204,8 @@ jobs:
     name: Run SolrJ Tests
 
     runs-on: self-hosted
+    # Run this job after pre-commit-checks were successful.
+    needs: pre-commit-checks
 
     # Run this job always, even if any of the previous jobs were skipped.
     # This job is executed only if the pre-commit-checks job is successful.
@@ -198,6 +255,8 @@ jobs:
     name: Run Solr Script Tests
 
     runs-on: self-hosted
+    # Run this job after pre-commit-checks were successful.
+    needs: pre-commit-checks
 
     # Run this job always, even if any of the previous jobs were skipped.
     # This job is executed only if the pre-commit-checks job is successful.
@@ -253,6 +312,8 @@ jobs:
     name: Run Solr Tests using Crave.io resources
 
     runs-on: self-hosted
+    # Run this job after pre-commit-checks were successful.
+    needs: pre-commit-checks
 
     # Run this job always, even if any of the previous jobs were skipped.
     # This job is executed only if the pre-commit-checks job is successful.
