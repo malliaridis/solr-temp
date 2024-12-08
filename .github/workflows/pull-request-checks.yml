@@ -30,10 +30,6 @@ jobs:
 
     runs-on: self-hosted
 
-    # Always run, even if lock-and-verify is skipped
-    # Run only when lock-and-verify is skipped, that is, when it is not the initial commit from dependabot.
-    if: always() && needs.lock-and-verify.result == 'skipped'
-
     env:
       DEVELOCITY_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
 
