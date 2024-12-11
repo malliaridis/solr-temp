@@ -208,7 +208,7 @@
       "jakarta.servlet:jakarta.servlet-api:4.0.4" : "1e12e466,refs=2",
       "jakarta.validation:jakarta.validation-api:3.0.2" : "ad8f08d7,refs=79",
       "jakarta.websocket:jakarta.websocket-api:1.1.2" : "1e12e466,refs=2",
-      "jakarta.ws.rs:jakarta.ws.rs-api:3.1.0" : "76db8e26,refs=87",
+      "jakarta.ws.rs:jakarta.ws.rs-api:4.0.0" : "76db8e26,refs=87",
       "jakarta.xml.bind:jakarta.xml.bind-api:2.3.3" : "debe9836,refs=7",
       "javax.inject:javax.inject:1" : "a9dcee72,refs=28",
       "javax.measure:unit-api:1.0" : "50a667d1,refs=5",
