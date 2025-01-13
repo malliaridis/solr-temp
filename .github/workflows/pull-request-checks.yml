@@ -69,7 +69,7 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Write locks
-        run: ./gradlew writeLocks
+        run: ./gradlew resolveAndLockAll
 
       - name: Update licenses / checksums
         run: ./gradlew updateLicenses
