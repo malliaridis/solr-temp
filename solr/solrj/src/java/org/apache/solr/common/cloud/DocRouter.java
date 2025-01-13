@@ -19,11 +19,12 @@ package org.apache.solr.common.cloud;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.solr.cluster.api.HashRange;
+import org.apache.solr.common.SolrException;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.cloud.DocCollection.CollectionStateProps;
 import org.apache.solr.common.params.SolrParams;
@@ -36,6 +37,15 @@ import org.noggit.JSONWriter;
  * @lucene.experimental
  */
 public abstract class DocRouter {
+  public static final String DEFAULT_NAME = CompositeIdRouter.NAME;
+  public static final DocRouter DEFAULT;
+
+  public static DocRouter getDocRouter(String routerName) {
+    DocRouter router = routerMap.get(routerName);
+    if (router != null) return router;
+    throw new SolrException(
+        SolrException.ErrorCode.SERVER_ERROR, "Unknown document router '" + routerName + "'");
+  }
 
   public String getRouteField(DocCollection coll) {
     if (coll == null) return null;
@@ -53,15 +63,32 @@ public abstract class DocRouter {
       }
     }
     if (map.get("name") == null) {
-      map.put("name", DocRouters.DEFAULT_NAME);
+      map.put("name", DEFAULT_NAME);
     }
     return map;
+  }
+
+  // currently just an implementation detail...
+  private static final Map<String, DocRouter> routerMap;
+
+  static {
+    routerMap = new HashMap<>();
+    PlainIdRouter plain = new PlainIdRouter();
+    // instead of doing back compat this way, we could always convert the clusterstate on first read
+    // to "plain" if it doesn't have any properties.
+    routerMap.put(null, plain); // back compat with 4.0
+    routerMap.put(PlainIdRouter.NAME, plain);
+    routerMap.put(CompositeIdRouter.NAME, new CompositeIdRouter());
+    routerMap.put(ImplicitDocRouter.NAME, new ImplicitDocRouter());
+    // NOTE: careful that the map keys (the static .NAME members) are filled in by making them final
+
+    DEFAULT = routerMap.get(DEFAULT_NAME);
   }
 
   // Hash ranges can't currently "wrap" - i.e. max must be greater or equal to min.
   // TODO: ranges may not be all contiguous in the future (either that or we will
   // need an extra class to model a collection of ranges)
-  public static class Range implements JSONWriter.Writable, Comparable<Range>, HashRange {
+  public static class Range implements JSONWriter.Writable, Comparable<Range> {
     public int min; // inclusive
     public int max; // inclusive
 
@@ -71,17 +98,14 @@ public abstract class DocRouter {
       this.max = max;
     }
 
-    @Override
     public int min() {
       return min;
     }
 
-    @Override
     public int max() {
       return max;
     }
 
-    @Override
     public boolean includes(int hash) {
       return hash >= min && hash <= max;
     }

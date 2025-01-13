@@ -22,7 +22,6 @@ import filecmp
 import hashlib
 import http.client
 import os
-import platform
 import re
 import shutil
 import subprocess
@@ -35,6 +34,8 @@ import urllib.request
 import xml.etree.ElementTree as ET
 import zipfile
 from collections import namedtuple
+
+import platform
 import scriptutil
 
 # This tool expects to find /solr off the base URL.  You
@@ -626,7 +627,7 @@ def verifyUnpacked(java, artifact, unpackPath, gitRevision, version, testArgs):
 
   if isSrc:
     expected_src_root_folders = ['buildSrc', 'dev-docs', 'dev-tools', 'gradle', 'help', 'solr']
-    expected_src_root_files = ['build.gradle', 'gradlew', 'gradlew.bat', 'settings.gradle', 'versions.lock', 'versions.props']
+    expected_src_root_files = ['build.gradle', 'gradlew', 'gradlew.bat', 'settings.gradle', 'settings.gradle.lockfile']
     expected_src_solr_files = ['build.gradle']
     expected_src_solr_folders = ['benchmark',  'bin', 'modules', 'api', 'core', 'cross-dc-manager', 'docker', 'documentation', 'example', 'licenses', 'packaging', 'distribution', 'prometheus-exporter', 'server', 'solr-ref-guide', 'solrj', 'solrj-streaming', 'solrj-zookeeper', 'test-framework', 'webapp', '.gitignore', '.gitattributes']
     is_in_list(in_root_folder, expected_src_root_folders)
@@ -668,7 +669,7 @@ def verifyUnpacked(java, artifact, unpackPath, gitRevision, version, testArgs):
     java.run_java11('./gradlew --no-daemon integrationTest -Dversion.release=%s' % version, '%s/itest.log' % unpackPath)
     print("    build binary release w/ Java 11")
     java.run_java11('./gradlew --no-daemon dev -Dversion.release=%s' % version, '%s/assemble.log' % unpackPath)
-    testSolrExample("%s/solr/packaging/build/dev" % unpackPath, java.java11_home)
+    testSolrExample("%s/solr/packaging/build/dev" % unpackPath, java.java11_home, False)
 
     if java.run_java17:
       print("    run tests w/ Java 17 and testArgs='%s'..." % testArgs)
@@ -677,7 +678,7 @@ def verifyUnpacked(java, artifact, unpackPath, gitRevision, version, testArgs):
       java.run_java17('./gradlew --no-daemon integrationTest -Dversion.release=%s' % version, '%s/itest-java17.log' % unpackPath)
       print("    build binary release w/ Java 17")
       java.run_java17('./gradlew --no-daemon dev -Dversion.release=%s' % version, '%s/assemble-java17.log' % unpackPath)
-      testSolrExample("%s/solr/packaging/build/dev" % unpackPath, java.java17_home)
+      testSolrExample("%s/solr/packaging/build/dev" % unpackPath, java.java17_home, False)
 
   else:
     # Binary tarball
@@ -690,7 +691,7 @@ def verifyUnpacked(java, artifact, unpackPath, gitRevision, version, testArgs):
     shutil.copytree(unpackPath, java11UnpackPath)
     os.chdir(java11UnpackPath)
     print('    test solr example w/ Java 11...')
-    testSolrExample(java11UnpackPath, java.java11_home)
+    testSolrExample(java11UnpackPath, java.java11_home, isSlim)
 
     if java.run_java17:
       print('    copying unpacked distribution for Java 17 ...')
@@ -700,7 +701,7 @@ def verifyUnpacked(java, artifact, unpackPath, gitRevision, version, testArgs):
       shutil.copytree(unpackPath, java17UnpackPath)
       os.chdir(java17UnpackPath)
       print('    test solr example w/ Java 17...')
-      testSolrExample(java17UnpackPath, java.java17_home)
+      testSolrExample(java17UnpackPath, java.java17_home, isSlim)
 
     os.chdir(unpackPath)
 
@@ -742,7 +743,7 @@ def is_port_in_use(port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         return s.connect_ex(('localhost', port)) == 0
 
-def testSolrExample(binaryDistPath, javaPath):
+def testSolrExample(binaryDistPath, javaPath, isSlim):
   # test solr using some examples it comes with
   logFile = '%s/solr-example.log' % binaryDistPath
   old_cwd = os.getcwd() # So we can back-track
@@ -754,6 +755,10 @@ def testSolrExample(binaryDistPath, javaPath):
   env['JAVA_HOME'] = javaPath
   env['PATH'] = '%s/bin:%s' % (javaPath, env['PATH'])
 
+  example = "techproducts"
+  if isSlim:
+    example = "films"
+
   # Stop Solr running on port 8983 (in case a previous run didn't shutdown cleanly)
   try:
       if not cygwin:
@@ -763,20 +768,20 @@ def testSolrExample(binaryDistPath, javaPath):
   except:
      print('      Stop failed due to: '+sys.exc_info()[0])
 
-  print('      Running techproducts example on port 8983 from %s' % binaryDistPath)
+  print('      Running %s example on port 8983 from %s' % (example, binaryDistPath))
   try:
     if not cygwin:
-      runExampleStatus = subprocess.call(['bin/solr','start','-e','techproducts'])
+      runExampleStatus = subprocess.call(['bin/solr','start','-e',example])
     else:
-      runExampleStatus = subprocess.call('env "PATH=`cygpath -S -w`:$PATH" bin/solr.cmd -e techproducts', shell=True)
+      runExampleStatus = subprocess.call('env "PATH=`cygpath -S -w`:$PATH" bin/solr.cmd -e ' + example, shell=True)
 
     if runExampleStatus != 0:
-      raise RuntimeError('Failed to run the techproducts example, check log for previous errors.')
+      raise RuntimeError('Failed to run the %s example, check log for previous errors.' % example)
 
     os.chdir('example')
     print('      run query...')
-    s = load('http://localhost:8983/solr/techproducts/select/?q=video')
-    if s.find('"numFound":3,') == -1:
+    s = load('http://localhost:8983/solr/%s/select/?q=video' % example)
+    if s.find('"numFound":%d,' % (8 if isSlim else 3)) == -1:
       print('FAILED: response is:\n%s' % s)
       raise RuntimeError('query on solr example instance failed')
     s = load('http://localhost:8983/api/cores')
