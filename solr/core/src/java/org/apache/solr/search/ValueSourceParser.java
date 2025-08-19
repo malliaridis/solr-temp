@@ -20,8 +20,11 @@ import org.apache.lucene.queries.function.ValueSource;
 import org.apache.solr.util.plugin.NamedListInitializedPlugin;
 
 /**
- * A factory that parses user queries to generate ValueSource instances. Intended usage is to create
- * pluggable, named functions for use in function queries.
+ * A factory parsing arguments (from {@link FunctionQParser}) into a real function whose results are
+ * emitted from a {@link ValueSource}. Custom ones can be registered by name and configured in
+ * {@code solrconfig.xml}.
+ *
+ * @see FunctionQParser
  */
 public abstract class ValueSourceParser implements NamedListInitializedPlugin {
   /** Parse the user input into a ValueSource. */
